@@ -2,6 +2,10 @@
 Created 5-18-17
 All of the classes for EloPy. The users should only interact with the Implementation class.
 @author - Hank Hang Kai Sheehan
+
+Modified 6-20-18
+Tentative implementation for games with scores following https://www.eloratings.net methodology
+@author - Felippe Rodrigues
 """
 
 class Implementation:
@@ -65,7 +69,7 @@ class Implementation:
         self.__getPlayerList().remove(self.getPlayer(name))
 
 
-    def recordMatch(self, name1, name2, winner=None, draw=False):
+    def recordMatch(self, name1, name2, location=None, score=[]):
         """
         Should be called after a game is played.
         @param name1 - name of the first player.
@@ -74,28 +78,39 @@ class Implementation:
         player1 = self.getPlayer(name1)
         player2 = self.getPlayer(name2)
 
-        expected1 = player1.compareRating(player2)
-        expected2 = player2.compareRating(player1)
+        expected1 = player1.getWinExpectancy(player2, location)
+        expected2 = player2.getWinExpectancy(player1, location)
         
         k = len(self.__getPlayerList()) * 42
 
         rating1 = player1.rating
         rating2 = player2.rating
 
-        if draw:
-            score1 = 0.5
-            score2 = 0.5
-        elif winner == name1:
-            score1 = 1.0
-            score2 = 0.0
-        elif winner == name2:
-            score1 = 0.0
-            score2 = 1.0
+        if score[0] == score[1]:
+            result1 = 0.5
+            result2 = 0.5
+        elif score[0] > score[1]:
+            result1 = 1.0
+            result2 = 0.0
+        elif score[0] > score[1]:
+            result1 = 0.0
+            result2 = 1.0
         else:
-            raise InputError('One of the names must be the winner or draw must be True')
-
-        newRating1 = rating1 + k * (score1 - expected1)
-        newRating2 = rating2 + k * (score2 - expected2)
+            raise InputError('A score must be informed')
+        
+        diff = abs(score[0] - score[1])
+        
+        if diff == 2:
+            adj = (1 + 1/2) # increase by half
+        elif diff == 3:
+            adj = (1 + 3/4) # increase by 3/4
+        elif diff > 3:
+            adj = (1 + 3/4 + (diff-3)/8) # increase by 3/4 plus differential
+        else:
+            adj = 1
+            
+        newRating1 = rating1 + k * adj * (result1 - expected1)
+        newRating2 = rating2 + k * adj * (result2 - expected2)
 
         if newRating1 < 0:
             newRating1 = 0
@@ -141,10 +156,19 @@ class _Player:
         self.name = name
         self.rating = rating
 
-    def compareRating(self, opponent):
+    def getWinExpectancy(self, opponent, location=None):
         """
         Compares the two ratings of the this player and the opponent.
         @param opponent - the player to compare against.
+        @param location - check for home_factor.
         @returns - The expected score between the two players.
         """
-        return ( 1+10**( ( opponent.rating-self.rating )/400.0 ) ) ** -1
+        
+        if location == self.name:
+            home_factor = 100
+        elif location == opponent.name:
+            home_factor = -100
+        else:
+            home_factor = 0
+            
+        return ( 1+10**( ( opponent.rating - (self.rating + home_factor) )/400.0 ) ) ** -1
