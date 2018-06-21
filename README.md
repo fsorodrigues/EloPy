@@ -13,27 +13,33 @@ A python library for the Elo Rating System created by [HandMD](https://github.co
 ## Calculations
 
 Win Expectancy:
+
 `winExpectancy = 1 / ( 1 + 10 ** ( opponentRating - (teamRating + homeFactor) ) / 400.0 ) )`
 
 Home Factor:
+
 `+ 100` for teams playing at home
 `- 100` for teams playing away
 `0` for neutral venue
 
 K:
+
 Right now the K factor is set as `40` (constant). Working on adjusting for competition/game importance.
 
 Score adjustment to K:
+
 increase by `1/2` if game was won by 2 goals.
 increase by `3/4` if game was won by 3 goals.
 increase by `3/4 + (goalDiff-3)/8` if game was won by 3 or more goals, `goalDiff` being the absolute difference of goals.
 
 Result:
+
 `1` for win
 `0.5` for draw
 `0` for loss
 
 Rating:
+
 `newRating = oldRating + (k * adj) * (result1 - expected1)`
 
 
