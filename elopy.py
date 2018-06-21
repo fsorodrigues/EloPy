@@ -81,7 +81,8 @@ class Implementation:
         expected1 = player1.getWinExpectancy(player2, location)
         expected2 = player2.getWinExpectancy(player1, location)
         
-        k = len(self.__getPlayerList()) * 42
+        # k = len(self.__getPlayerList()) * 42
+        k = 40
 
         rating1 = player1.rating
         rating2 = player2.rating
@@ -92,7 +93,7 @@ class Implementation:
         elif score[0] > score[1]:
             result1 = 1.0
             result2 = 0.0
-        elif score[0] > score[1]:
+        elif score[0] < score[1]:
             result1 = 0.0
             result2 = 1.0
         else:
