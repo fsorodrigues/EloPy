@@ -64,5 +64,7 @@ print(i.getRatingList())
 #### Recording a match
 ```python
 i.recordMatch("Brazil","Germany",score=[7,1],location=None) # score follows team names order
+
+print(i.getRatingList())
 >>> [('Brazil', 1089.25), ('Germany', 910.75)]
 ```
