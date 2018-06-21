@@ -1,8 +1,6 @@
 # EloPy
 
-Please reccomend any functionality you think should be added!
-
-A python library for the Elo Rating System. Right now it only supports 1 vs 1 games.
+A python library for the Elo Rating System created by [HandMD](https://github.com/HankMD/EloPy) and adapted by me to score-based games with home-field advantage. Implementation right now is tailored to football (soccer for americans).
 
 
 ## What is the Elo Rating System?
@@ -13,19 +11,31 @@ A python library for the Elo Rating System. Right now it only supports 1 vs 1 ga
 
 
 ## Calculations
-If Player A has a rating of R<sub>A</sub> and Player B a rating of R<sub>B</sub>, the exact formula for Player A's score is:
 
-![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/51346e1c65f857c0025647173ae48ddac904adcb)
+Win Expectancy:
+`winExpectancy = 1 / ( 1 + 10 ** ( opponentRating - (teamRating + homeFactor) ) / 400.0 ) )`
 
-And Player B's score is:
+Home Factor:
+`+ 100` for teams playing at home
+`- 100` for teams playing away
+`0` for neutral venue
 
-![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/4b340e7d15e61ee7d90f428dcf7f4b3c049d89ff)
+K:
+Right now the K factor is set as `40` (constant). Working on adjusting for competition/game importance.
 
-Supposing Player A was expected to score E<sub>A</sub> points but actually scored S<sub>A</sub> points. The formula for updating his/her rating is:
+Score adjustment to K:
+increase by `1/2` if game was won by 2 goals.
+increase by `3/4` if game was won by 3 goals.
+increase by `3/4 + (goalDiff-3)/8` if game was won by 3 or more goals, `goalDiff` being the absolute difference of goals.
 
-![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/09a11111b433582eccbb22c740486264549d1129)
+Result:
+`1` for win
+`0.5` for draw
+`0` for loss
 
-Right now the K factor is found by the number of player multiplied by 42 as a constant. Working on custom K factors.
+Rating:
+`newRating = oldRating + (k * adj) * (result1 - expected1)`
+
 
 ## Syntax when using EloPy
 
@@ -38,36 +48,21 @@ i = Implementation()
 
 #### Adding and removing players
 ```python
-i.addPlayer("Hank") #default ranking is 1000
-i.addPlayer("Bill",rating=900)
+i.addPlayer("Brazil") #default ranking is 1000
+i.addPlayer("Germany",rating=900)
+i.addPlayer("Italy")
 
-print i.getPlayerRating("Hank"), i.getPlayerRating("Bill")
+print(i.getPlayerRating("Brazil"), i.getPlayerRating("Germany"))
+>>> 1000, 900
 
-i.removePlayer("Hank")
+i.removePlayer("Italy")
 
-print i.getRatingList()
-```
-```shell
-1000 900
-900
+print(i.getRatingList())
+>>> [('Brazil', 1000), ('Germany', 900)]
 ```
 
 #### Recording a match
 ```python
-i.recordMatch("Hank","Bill",winner="Hank")
-
-print i.getRatingList()
-
-i.recordMatch("Hank","Bill",winner="Bill")
-
-print i.getRatingList()
-
-i.recordMatch("Hank","Bill",draw=True)
-
-print i.getRatingList()
-```
-```shell
-[('Hank', 1030.2345400165577), ('Bill', 869.7654599834424)]
-[('Hank', 970.1071401496504), ('Bill', 929.8928598503497)]
-[('Hank', 965.2674016281943), ('Bill', 934.7325983718058)]
+i.recordMatch("Brazil","Germany",score=[7,1],location=None) # score follows team names order
+>>> [('Brazil', 1089.25), ('Germany', 910.75)]
 ```
